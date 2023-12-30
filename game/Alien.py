@@ -21,6 +21,8 @@ class Alien(Sprite):
         self.image = self.alien_stand_surface
         self.rect = self.image.get_rect(midbottom = (200, 300))
 
+        self.keydown_a, self.keydown_d = False, False
+
     def update(self):
         if (self.dx, self.dy) == (0, 0):
             self.image = self.alien_stand_surface
@@ -43,20 +45,27 @@ class Alien(Sprite):
                 self.image = self.alien_stand_surface
                 self.dy = 0
 
-
         self.walk_animation_idx = (self.walk_animation_idx + 0.1) % 2
 
     def process_event(self, event):
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_a:
+                self.keydown_a = True
                 self.dx = -1
             elif event.key == pygame.K_d:
+                self.keydown_d = True
                 self.dx = 1
             elif (event.key == pygame.K_SPACE or event.key == pygame.K_w) and self.rect.bottom == GameConfig.GROUND_LEVEL:
                 self.dy = GameConfig.JUMP_IMPULSE
         elif event.type == pygame.KEYUP:
-            if event.key in (pygame.K_a, pygame.K_d):
-                self.dx = 0
+            if event.key == pygame.K_a:
+                self.keydown_a = False
+                if not self.keydown_d:
+                    self.dx = 0
+            elif event.key == pygame.K_d:
+                self.keydown_d = False
+                if not self.keydown_a:
+                    self.dx = 0
 
 
 
