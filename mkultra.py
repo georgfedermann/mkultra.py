@@ -31,6 +31,11 @@ class Game():
         self.keep_running = True
         self.mode = 'menu'
 
+    def reset_game(self):
+        self.alien.add(Alien())
+        self.fly_group.empty()
+        self.snail_group.empty()
+
     def add_critter(self):
         if random.randint(0,10) >= 4:
             self.fly_group.add(Fly())
@@ -57,6 +62,11 @@ class Game():
         self.snail_group.update()
         self.snail_group.draw(self.screen)
 
+        if pygame.sprite.spritecollide(self.alien.sprite, self.fly_group, False):
+            self.mode = 'menu'
+        if pygame.sprite.spritecollide(self.alien.sprite, self.snail_group, False):
+            self.mode = 'menu'
+
     def show_menu(self):
         self.screen.fill(GameConfig.MENU_BACKGROUND_COLOR)
         for event in pygame.event.get():
@@ -64,6 +74,7 @@ class Game():
                 self.keep_running = False
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
+                    self.reset_game()
                     self.mode = 'game'
             elif event.type == pygame.JOYDEVICEADDED:
                 print('Joystick added')
