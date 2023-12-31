@@ -1,6 +1,7 @@
 class GameConfig():
     # Game
     FPS = 60
+    FLIGHT_LEVEL = 216
 
     # Player
     GROUND_LEVEL = 300

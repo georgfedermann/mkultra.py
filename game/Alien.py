@@ -23,6 +23,8 @@ class Alien(Sprite):
 
         self.keydown_a, self.keydown_d = False, False
 
+        self.life_energy = 100
+
     def update(self):
         if (self.dx, self.dy) == (0, 0):
             self.image = self.alien_stand_surface
