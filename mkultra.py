@@ -1,6 +1,7 @@
 from game.Alien import Alien
 from game.Fly import Fly
 from game.GameConfig import GameConfig
+from game.Snail import Snail
 import pygame
 from pygame.sprite import Group,  GroupSingle
 import random
@@ -19,11 +20,13 @@ class Game():
         self.alien.add(Alien())
 
         self.fly_group = Group()
+        self.snail_group = Group()
 
     def add_critter(self):
         if random.randint(0,10) >= 4:
             self.fly_group.add(Fly())
-
+        else:
+            self.snail_group.add(Snail())
 
     def run_game(self):
         print('Launching MK Ultra')
@@ -53,6 +56,8 @@ class Game():
 
             self.fly_group.update()
             self.fly_group.draw(self.screen)
+            self.snail_group.update()
+            self.snail_group.draw(self.screen)
 
             pygame.display.update()
             clock.tick(GameConfig.FPS)

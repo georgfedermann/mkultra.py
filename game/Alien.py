@@ -68,6 +68,3 @@ class Alien(Sprite):
                 self.keydown_d = False
                 if not self.keydown_a:
                     self.dx = 0
-
-
-
