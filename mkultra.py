@@ -1,6 +1,8 @@
 from game.Alien import Alien
+from game.HealthBar import HealthBar
 from game.Fly import Fly
 from game.GameConfig import GameConfig
+from game.ScoreBoard import ScoreBoard
 from game.Snail import Snail
 import pygame
 from pygame.joystick import Joystick
@@ -19,13 +21,18 @@ class Game():
         self.font = pygame.font.Font('font/Pixeltype.ttf', 50)
 
         self.score = 0
+        self.score_board = ScoreBoard(self)
+        self.score_board.set_score(self.score)
 
         self.alien = GroupSingle()
         self.alien.add(Alien())
+        self.health_bar = HealthBar(self.alien.sprite)
 
         self.fly_group = Group()
         self.snail_group = Group()
         self.dead_critter_group = Group()
+        self.dead_critter_group.add(self.health_bar)
+        self.dead_critter_group.add(self.score_board)
 
         self.clock = pygame.time.Clock()
         self.critter_timer = pygame.USEREVENT + 1
@@ -47,7 +54,11 @@ class Game():
         self.alien.add(Alien())
         self.fly_group.empty()
         self.snail_group.empty()
-        self.dead_critter_group.empty()
+        self.health_bar.set_alien(self.alien.sprite)
+        self.score = 0
+        self.score_board.set_score(self.score)
+        print(f'dead_critter_group {len(self.dead_critter_group)}')
+        # self.dead_critter_group.empty()
         self.score = 0
 
     def add_critter(self):
@@ -58,10 +69,10 @@ class Game():
 
     def check_collisions(self):
         collision_flies = pygame.sprite.spritecollide(self.alien.sprite, self.fly_group, True)
+        player = self.alien.sprite
         if collision_flies:
             print(f"Collision with {len(collision_flies)} flies")
             fly = collision_flies[0]
-            player = self.alien.sprite
             self.dead_critter_group.add(fly)
             delta_x = abs(player.rect.centerx - fly.rect.centerx)
             delta_y = abs(player.rect.bottom - fly.rect.top)
@@ -70,9 +81,13 @@ class Game():
                 self.score += GameConfig.FLY_SCORE
                 fly.hit()
             else:
-                self.mode = 'hiscores'
+                player.life_energy -= GameConfig.FLY_DAMAGE
+                if player.life_energy <= 0:
+                    self.mode = 'hiscores'
         if pygame.sprite.spritecollide(self.alien.sprite, self.snail_group, False):
-            self.mode = 'hiscores'
+            player.life_energy -= GameConfig.SNAIL_DAMAGE
+            if player.life_energy <= 0:
+                self.mode = 'hiscores'
 
     def run_game(self):
         for event in pygame.event.get():

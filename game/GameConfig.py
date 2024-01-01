@@ -19,3 +19,11 @@ class GameConfig():
 
     # Fly
     FLY_SCORE = 100
+    FLY_DAMAGE = 10
+
+    # Snail
+    SNAIL_SCORE = 200
+    SNAIL_DAMAGE = 20
+
+    # Healthbar
+    HEALTHBAR_WIDTH = 200
