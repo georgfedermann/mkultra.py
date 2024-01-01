@@ -18,11 +18,14 @@ class Game():
         self.ground_surface = pygame.image.load(graph_path + 'ground.png').convert_alpha()
         self.font = pygame.font.Font('font/Pixeltype.ttf', 50)
 
+        self.score = 0
+
         self.alien = GroupSingle()
         self.alien.add(Alien())
 
         self.fly_group = Group()
         self.snail_group = Group()
+        self.dead_critter_group = Group()
 
         self.clock = pygame.time.Clock()
         self.critter_timer = pygame.USEREVENT + 1
@@ -35,12 +38,32 @@ class Game():
         self.alien.add(Alien())
         self.fly_group.empty()
         self.snail_group.empty()
+        self.dead_critter_group.empty()
+        self.score = 0
 
     def add_critter(self):
         if random.randint(0,10) >= 4:
             self.fly_group.add(Fly())
         else:
             self.snail_group.add(Snail())
+
+    def check_collisions(self):
+        collision_flies = pygame.sprite.spritecollide(self.alien.sprite, self.fly_group, True)
+        if collision_flies:
+            print(f"Collision with {len(collision_flies)} flies")
+            fly = collision_flies[0]
+            player = self.alien.sprite
+            self.dead_critter_group.add(fly)
+            delta_x = abs(player.rect.centerx - fly.rect.centerx)
+            delta_y = abs(player.rect.bottom - fly.rect.top)
+            print(f'delta x {delta_x}, delta_y {delta_y}')
+            if delta_y < 6 and delta_x < 55:
+                self.score += GameConfig.FLY_SCORE
+                fly.hit()
+            else:
+                self.mode = 'menu'
+        if pygame.sprite.spritecollide(self.alien.sprite, self.snail_group, False):
+            self.mode = 'menu'
 
     def run_game(self):
         for event in pygame.event.get():
@@ -61,11 +84,10 @@ class Game():
         self.fly_group.draw(self.screen)
         self.snail_group.update()
         self.snail_group.draw(self.screen)
+        self.dead_critter_group.update()
+        self.dead_critter_group.draw(self.screen)
 
-        if pygame.sprite.spritecollide(self.alien.sprite, self.fly_group, False):
-            self.mode = 'menu'
-        if pygame.sprite.spritecollide(self.alien.sprite, self.snail_group, False):
-            self.mode = 'menu'
+        self.check_collisions()
 
     def show_menu(self):
         self.screen.fill(GameConfig.MENU_BACKGROUND_COLOR)
@@ -87,7 +109,7 @@ class Game():
         label_mkultra_rect = label_mkultra_surface.get_rect(midbottom = (GameConfig.SCREEN_WIDTH / 2, 80))
         label_run_surface = self.font.render('Press <Space> to run', False, GameConfig.MENU_TITLE_COLOR)
         label_run_rect = label_run_surface.get_rect(midbottom = (GameConfig.SCREEN_WIDTH / 2, 350))
-        label_score_surface = self.font.render(f'{100}', True, (255, 196, 0))
+        label_score_surface = self.font.render(f'{self.score}', True, (255, 196, 0))
         label_score_surface = pygame.transform.rotozoom(label_score_surface, 45, 1)
         label_score_rect = label_score_surface.get_rect(center = (600, 200))
         mkultra_label = pygame.transform.scale_by(pygame.image.load('graphics/Player/player_stand.png').convert_alpha(), 2)

@@ -16,3 +16,6 @@ class GameConfig():
     # Menu
     MENU_BACKGROUND_COLOR = (94, 129, 162)
     MENU_TITLE_COLOR = (127, 217, 187)
+
+    # Fly
+    FLY_SCORE = 100

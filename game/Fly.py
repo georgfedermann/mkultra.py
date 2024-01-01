@@ -18,10 +18,22 @@ class Fly(Sprite):
         self.image = self.fly_surfaces[self.fly_animation_idx]
         self.rect = self.image.get_rect(midbottom = (random.randint(900, 1100), GameConfig.FLIGHT_LEVEL))
 
-    def update(self):
-        if self.rect.right < 0:
-            self.kill()
-        self.rect.x -= 4
-        self.image = self.fly_surfaces[int(self.fly_animation_idx)]
+        self.dx = random.choice([3,4,5,6])
+        self.active = True
 
-        self.fly_animation_idx = (self.fly_animation_idx + 0.1) % 2
+    def hit(self):
+        print("Hit")
+        self.active = False
+        self.dy = 0
+        self.image = pygame.transform.rotozoom(self.image, 180, 1)
+
+    def update(self):
+        if self.rect.right < 0 or self.rect.top > GameConfig.SCREEN_HEIGHT:
+            self.kill()
+        if self.active:
+            self.rect.x -= self.dx
+            self.image = self.fly_surfaces[int(self.fly_animation_idx)]
+            self.fly_animation_idx = (self.fly_animation_idx + 0.1) % 2
+        else:
+            self.rect.y += self.dy
+            self.dy += 1
