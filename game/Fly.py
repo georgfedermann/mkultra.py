@@ -18,6 +18,9 @@ class Fly(Sprite):
         self.image = self.fly_surfaces[self.fly_animation_idx]
         self.rect = self.image.get_rect(midbottom = (random.randint(900, 1100), GameConfig.FLIGHT_LEVEL))
 
+        self.punch_sound = pygame.mixer.Sound('audio/punch.mp3')
+        self.punch_sound.set_volume(0.5)
+
         self.dx = random.choice([3,4,5,6])
         self.active = True
 
@@ -26,6 +29,7 @@ class Fly(Sprite):
         self.active = False
         self.dy = 0
         self.image = pygame.transform.rotozoom(self.image, 180, 1)
+        self.punch_sound.play()
 
     def update(self):
         if self.rect.right < 0 or self.rect.top > GameConfig.SCREEN_HEIGHT:

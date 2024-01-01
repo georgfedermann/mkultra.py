@@ -25,6 +25,9 @@ class Alien(Sprite):
 
         self.life_energy = 100
 
+        self.jump_sound = pygame.mixer.Sound('audio/cjump.mp3')
+        self.jump_sound.set_volume(0.5)
+
     def update(self):
         if (self.dx, self.dy) == (0, 0):
             self.image = self.alien_stand_surface
@@ -59,6 +62,7 @@ class Alien(Sprite):
                 self.dx = 1
             elif (event.key == pygame.K_SPACE or event.key == pygame.K_w) and self.rect.bottom == GameConfig.GROUND_LEVEL:
                 self.dy = GameConfig.JUMP_IMPULSE
+                self.jump_sound.play()
         elif event.type == pygame.KEYUP:
             if event.key == pygame.K_a:
                 self.keydown_a = False
