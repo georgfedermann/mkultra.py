@@ -26,7 +26,7 @@ class Game():
 
         self.alien = GroupSingle()
         self.alien.add(Alien())
-        self.health_bar = HealthBar((20, 20), self.alien.sprite.life_energy / self.alien.sprite.max_life_energy)
+        self.health_bar = HealthBar((10, 10), self.alien.sprite.life_energy / self.alien.sprite.max_life_energy)
 
         self.fly_group = Group()
         self.snail_group = Group()
@@ -49,6 +49,7 @@ class Game():
 
         self.after_game_music = pygame.mixer.Sound('audio/hiscore.mp3')
         self.after_game_music.set_volume(0.2)
+        self.achievement_sound = pygame.mixer.Sound('audio/achievement.mp3')
 
     def reset_game(self):
         self.alien.add(Alien())
@@ -68,22 +69,33 @@ class Game():
             self.snail_group.add(Snail())
 
     def check_collisions(self):
+        # flies
         collision_flies = pygame.sprite.spritecollide(self.alien.sprite, self.fly_group, True)
         player = self.alien.sprite
         if collision_flies:
+            hit_count = 0
             print(f"Collision with {len(collision_flies)} flies")
-            fly = collision_flies[0]
-            self.dead_critter_group.add(fly)
-            delta_x = abs(player.rect.centerx - fly.rect.centerx)
-            delta_y = abs(player.rect.bottom - fly.rect.top)
-            print(f'delta x {delta_x}, delta_y {delta_y}')
-            if delta_y < 6 and delta_x < 55:
-                self.score += GameConfig.FLY_SCORE
-                fly.hit()
-            else:
-                player.life_energy -= GameConfig.FLY_DAMAGE
-                if player.life_energy <= 0:
-                    self.mode = 'hiscores'
+
+            for fly in collision_flies:
+                delta_x = abs(player.rect.centerx - fly.rect.centerx)
+                delta_y = abs(player.rect.bottom - fly.rect.top)
+                print(f'delta x {delta_x}, delta_y {delta_y}')
+                if delta_y < 6 and delta_x < 55:
+                    self.dead_critter_group.add(fly)
+                    self.score += GameConfig.FLY_SCORE
+                    fly.hit()
+                    hit_count += 1
+                else:
+                    self.fly_group.add(fly)
+                    player.life_energy -= GameConfig.FLY_DAMAGE
+                    if player.life_energy <= 0:
+                        self.mode = 'hiscores'
+
+            if hit_count > 1:
+                self.achievement_sound.play()
+                self.alien.sprite.life_energy = self.alien.sprite.max_life_energy
+
+        # snails
         if pygame.sprite.spritecollide(self.alien.sprite, self.snail_group, False):
             player.life_energy -= GameConfig.SNAIL_DAMAGE
             if player.life_energy <= 0:
