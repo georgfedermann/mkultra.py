@@ -24,6 +24,3 @@ class GameConfig():
     # Snail
     SNAIL_SCORE = 200
     SNAIL_DAMAGE = 20
-
-    # Healthbar
-    HEALTHBAR_WIDTH = 200

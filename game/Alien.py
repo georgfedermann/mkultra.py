@@ -23,7 +23,8 @@ class Alien(Sprite):
 
         self.keydown_a, self.keydown_d = False, False
 
-        self.life_energy = 100
+        self.max_life_energy = 100
+        self.life_energy = self.max_life_energy
 
         self.jump_sound = pygame.mixer.Sound('audio/cjump.mp3')
         self.jump_sound.set_volume(0.5)

@@ -1,5 +1,5 @@
 from game.Alien import Alien
-from game.HealthBar import HealthBar
+from components.HealthBar import HealthBar
 from game.Fly import Fly
 from game.GameConfig import GameConfig
 from game.ScoreBoard import ScoreBoard
@@ -26,7 +26,7 @@ class Game():
 
         self.alien = GroupSingle()
         self.alien.add(Alien())
-        self.health_bar = HealthBar(self.alien.sprite)
+        self.health_bar = HealthBar((20, 20), self.alien.sprite.life_energy / self.alien.sprite.max_life_energy)
 
         self.fly_group = Group()
         self.snail_group = Group()
@@ -54,7 +54,7 @@ class Game():
         self.alien.add(Alien())
         self.fly_group.empty()
         self.snail_group.empty()
-        self.health_bar.set_alien(self.alien.sprite)
+        self.health_bar.set_percentage(self.alien.sprite.life_energy / self.alien.sprite.max_life_energy)
         self.score = 0
         self.score_board.set_score(self.score)
         print(f'dead_critter_group {len(self.dead_critter_group)}')
@@ -113,6 +113,7 @@ class Game():
         self.fly_group.draw(self.screen)
         self.snail_group.update()
         self.snail_group.draw(self.screen)
+        self.health_bar.set_percentage(self.alien.sprite.life_energy / self.alien.sprite.max_life_energy)
         self.dead_critter_group.update()
         self.dead_critter_group.draw(self.screen)
 
