@@ -18,6 +18,15 @@ class Snail(Sprite):
         self.image = self.snail_surfaces[self.snail_animation_idx]
         self.rect = self.image.get_rect(midbottom = (random.randint(900, 1100), GameConfig.GROUND_LEVEL))
 
+        self.damage_cooldown = 750
+        self.damage_time = -1
+
+    def can_do_damage(self, current_time):
+        return current_time - self.damage_time > self.damage_cooldown
+
+    def set_damage_time(self, current_time):
+        self.damage_time = current_time
+
     def update(self):
         if self.rect.right < 0:
             self.kill()

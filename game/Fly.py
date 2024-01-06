@@ -24,6 +24,15 @@ class Fly(Sprite):
         self.dx = random.choice([3,4,5,6])
         self.active = True
 
+        self.damage_cooldown = 750
+        self.damage_time = -1
+
+    def can_do_damage(self, current_time):
+        return current_time - self.damage_time > self.damage_cooldown
+
+    def set_damage_time(self, current_time):
+        self.damage_time = current_time
+
     def hit(self):
         print("Hit")
         self.active = False
