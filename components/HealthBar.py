@@ -64,5 +64,5 @@ class HealthBar(Sprite):
         Args:
             percentage (float): A float between 0 and 1 indicating the percentage of the KPI.
         """
-        assert 0 <= percentage <= 1, "Percentage must be a value between 0 and 1."
+        assert 0 <= percentage <= 1, "Percentage must be a value between 0 and 1 but was " + str(percentage)
         self.percentage = percentage

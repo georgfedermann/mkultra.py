@@ -73,3 +73,11 @@ class Alien(Sprite):
                 self.keydown_d = False
                 if not self.keydown_a:
                     self.dx = 0
+        elif event.type == pygame.JOYBUTTONDOWN:
+            if event.button == 1 and self.rect.bottom == GameConfig.GROUND_LEVEL:
+                self.dy = GameConfig.JUMP_IMPULSE
+                self.jump_sound.play()
+        elif event.type == pygame.JOYAXISMOTION:
+            if event.axis == 0:
+                self.dx = event.value
+

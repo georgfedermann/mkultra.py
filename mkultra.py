@@ -52,6 +52,7 @@ class Game():
         self.achievement_sound = pygame.mixer.Sound('audio/achievement.mp3')
 
     def reset_game(self):
+        print('Resetting game')
         self.alien.add(Alien())
         self.fly_group.empty()
         self.snail_group.empty()
@@ -156,8 +157,14 @@ class Game():
                 print('Joystick added')
                 self.joystick = Joystick(event.device_index)
             elif event.type == pygame.JOYBUTTONDOWN:
+                print(f'Joystick button {event.button} pressed')
                 if event.button == 2:
+                    print('Joystick button 2 pressed')
+                    self.reset_game()
                     self.mode = 'game'
+                    self.intro_music.stop()
+                    if self.game_music.get_num_channels() == 0:
+                        self.game_music.play(-1)
 
         label_mkultra_surface = self.font.render('MK Ultra', False, GameConfig.MENU_TITLE_COLOR)
         label_mkultra_rect = label_mkultra_surface.get_rect(midbottom = (GameConfig.SCREEN_WIDTH / 2, 80))
@@ -189,7 +196,11 @@ class Game():
                 self.joystick = Joystick(event.device_index)
             elif event.type == pygame.JOYBUTTONDOWN:
                 if event.button == 2:
+                    self.reset_game()
                     self.mode = 'game'
+                    self.after_game_music.stop()
+                    if self.game_music.get_num_channels() == 0:
+                        self.game_music.play(-1)
 
         label_mkultra_surface = self.font.render('BUSTED!', False, GameConfig.MENU_TITLE_COLOR)
         label_mkultra_rect = label_mkultra_surface.get_rect(midbottom = (GameConfig.SCREEN_WIDTH / 2, 80))
