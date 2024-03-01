@@ -24,3 +24,6 @@ class GameConfig():
     # Snail
     SNAIL_SCORE = 200
     SNAIL_DAMAGE = 20
+
+    # Animations
+    ANIMATION_SPEED = 0.1

@@ -1,35 +1,16 @@
 from .GameConfig import GameConfig
+from .Monster import Monster
 import pygame
 from pygame.sprite import Sprite
 import random
 
-IMAGE_PATH = 'graphics/snail/'
+IMAGE_PATH = 'graphics/snail'
 
-class Snail(Sprite):
-
-    _snail1_surface = None
-    _snail2_surface = None
-
-    @property
-    def snail1_surface(self):
-        if Snail._snail1_surface is None:
-            Snail._snail1_surface = pygame.image.load(IMAGE_PATH + 'snail1.png').convert_alpha()
-        return Snail._snail1_surface
-
-    @property
-    def snail2_surface(self):
-        if Snail._snail2_surface is None:
-            Snail._snail2_surface = pygame.image.load(IMAGE_PATH + 'snail2.png').convert_alpha()
-        return Snail._snail2_surface
+class Snail(Monster):
 
     def __init__(self):
-        super().__init__()
-
-        self.snail_surfaces = [self.snail1_surface, self.snail2_surface]
-        self.snail_animation_idx = 0
-
-        self.image = self.snail_surfaces[self.snail_animation_idx]
-        self.rect = self.image.get_rect(midbottom = (random.randint(900, 1100), GameConfig.GROUND_LEVEL))
+        super().__init__([f'{IMAGE_PATH}/snail1.png', f'{IMAGE_PATH}/snail2.png'],
+                         (random.randint(900, 1100), GameConfig.GROUND_LEVEL))
 
         self.damage_cooldown = 750
         self.damage_time = -1
@@ -44,7 +25,4 @@ class Snail(Sprite):
         if self.rect.right < 0:
             self.kill()
         self.rect.x -= 4
-        self.image = self.snail_surfaces[int(self.snail_animation_idx)]
-
-        self.snail_animation_idx = (self.snail_animation_idx + 0.1) % 2
-
+        self.update_animation()

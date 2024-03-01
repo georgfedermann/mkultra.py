@@ -52,15 +52,12 @@ class Game():
         self.achievement_sound = pygame.mixer.Sound('audio/achievement.mp3')
 
     def reset_game(self):
-        print('Resetting game')
         self.alien.add(Alien())
         self.fly_group.empty()
         self.snail_group.empty()
         self.health_bar.set_percentage(self.alien.sprite.life_energy / self.alien.sprite.max_life_energy)
         self.score = 0
         self.score_board.set_score(self.score)
-        print(f'dead_critter_group {len(self.dead_critter_group)}')
-        # self.dead_critter_group.empty()
         self.score = 0
 
     def add_critter(self):
@@ -75,7 +72,6 @@ class Game():
         player = self.alien.sprite
         if collision_flies:
             hit_count = 0
-            print(f"Collision with {len(collision_flies)} flies")
 
             for fly in collision_flies:
                 delta_x = abs(player.rect.centerx - fly.rect.centerx)
@@ -157,9 +153,7 @@ class Game():
                 print('Joystick added')
                 self.joystick = Joystick(event.device_index)
             elif event.type == pygame.JOYBUTTONDOWN:
-                print(f'Joystick button {event.button} pressed')
                 if event.button == 2:
-                    print('Joystick button 2 pressed')
                     self.reset_game()
                     self.mode = 'game'
                     self.intro_music.stop()
@@ -174,7 +168,6 @@ class Game():
         self.screen.blit(label_mkultra_surface, label_mkultra_rect)
         self.screen.blit(label_run_surface, label_run_rect)
         self.screen.blit(mkultra_label, mkultra_label.get_rect(center = (GameConfig.SCREEN_WIDTH / 2, GameConfig.SCREEN_HEIGHT / 2)))
-
 
     def show_hiscores(self):
         self.game_music.stop()
@@ -216,12 +209,7 @@ class Game():
         self.screen.blit(mkultra_label, mkultra_label.get_rect(center = (GameConfig.SCREEN_WIDTH / 2, GameConfig.SCREEN_HEIGHT / 2)))
     
     def run_mkultra(self):
-        print('Launching MK Ultra')
-
-        print(f'Entering game loop in mode {self.mode}')
-
         while self.keep_running:
-
             if self.mode == 'splash':
                 self.show_splash()
             elif self.mode == 'game':
@@ -232,7 +220,6 @@ class Game():
             pygame.display.update()
             self.clock.tick(GameConfig.FPS)
 
-        print('Exited game loop, shutting down MK Ultra.')
         pygame.quit()
 
 if __name__ == '__main__':
