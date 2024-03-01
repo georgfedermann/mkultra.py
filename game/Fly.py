@@ -7,19 +7,38 @@ IMAGE_PATH = 'graphics/Fly/'
 
 class Fly(Sprite):
 
+    _fly1_surface = None
+    _fly2_surface = None
+
+    _punch_sound = None
+
+    @property
+    def fly1_surface(self):
+        if Fly._fly1_surface is None:
+            Fly._fly1_surface = pygame.image.load(IMAGE_PATH + 'Fly1.png').convert_alpha()
+        return Fly._fly1_surface
+
+    @property
+    def fly2_surface(self):
+        if Fly._fly2_surface is None:
+            Fly._fly2_surface = pygame.image.load(IMAGE_PATH + 'Fly2.png').convert_alpha()
+        return Fly._fly2_surface
+
+    @property
+    def punch_sound(self):
+        if Fly._punch_sound is None:
+            Fly._punch_sound = pygame.mixer.Sound('audio/punch.mp3')
+            Fly._punch_sound.set_volume(0.5)
+        return Fly._punch_sound
+
     def __init__(self):
         super().__init__()
 
-        self.fly1_surface = pygame.image.load(IMAGE_PATH + 'Fly1.png').convert_alpha()
-        self.fly2_surface = pygame.image.load(IMAGE_PATH + 'Fly2.png').convert_alpha()
         self.fly_surfaces = [self.fly1_surface, self.fly2_surface]
         self.fly_animation_idx = 0
 
         self.image = self.fly_surfaces[self.fly_animation_idx]
         self.rect = self.image.get_rect(midbottom = (random.randint(900, 1100), GameConfig.FLIGHT_LEVEL))
-
-        self.punch_sound = pygame.mixer.Sound('audio/punch.mp3')
-        self.punch_sound.set_volume(0.5)
 
         self.dx = random.choice([3,4,5,6])
         self.active = True

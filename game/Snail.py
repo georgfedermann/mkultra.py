@@ -7,11 +7,24 @@ IMAGE_PATH = 'graphics/snail/'
 
 class Snail(Sprite):
 
+    _snail1_surface = None
+    _snail2_surface = None
+
+    @property
+    def snail1_surface(self):
+        if Snail._snail1_surface is None:
+            Snail._snail1_surface = pygame.image.load(IMAGE_PATH + 'snail1.png').convert_alpha()
+        return Snail._snail1_surface
+
+    @property
+    def snail2_surface(self):
+        if Snail._snail2_surface is None:
+            Snail._snail2_surface = pygame.image.load(IMAGE_PATH + 'snail2.png').convert_alpha()
+        return Snail._snail2_surface
+
     def __init__(self):
         super().__init__()
 
-        self.snail1_surface = pygame.image.load(IMAGE_PATH + 'snail1.png').convert_alpha()
-        self.snail2_surface = pygame.image.load(IMAGE_PATH + 'snail2.png').convert_alpha()
         self.snail_surfaces = [self.snail1_surface, self.snail2_surface]
         self.snail_animation_idx = 0
 

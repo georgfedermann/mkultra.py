@@ -6,15 +6,40 @@ IMAGE_PATH = 'graphics/Player/'
 
 class Alien(Sprite):
 
+    _alien_stand_surface = None
+    _alien_walk1_surface = None
+    _alien_walk2_surface = None
+    _alien_jump_surface = None
+
+    @property
+    def alien_stand_surface(self):
+        if Alien._alien_stand_surface is None:
+            Alien._alien_stand_surface = pygame.image.load(IMAGE_PATH + 'player_stand.png').convert_alpha()
+        return Alien._alien_stand_surface
+
+    @property
+    def alien_walk1_surface(self):
+        if Alien._alien_walk1_surface is None:
+            Alien._alien_walk1_surface = pygame.image.load(IMAGE_PATH + 'player_walk_1.png').convert_alpha()
+        return Alien._alien_walk1_surface
+
+    @property
+    def alien_walk2_surface(self):
+        if Alien._alien_walk2_surface is None:
+            Alien._alien_walk2_surface = pygame.image.load(IMAGE_PATH + 'player_walk_2.png').convert_alpha()
+        return Alien._alien_walk2_surface
+
+    @property
+    def alien_jump_surface(self):
+        if Alien._alien_jump_surface is None:
+            Alien._alien_jump_surface = pygame.image.load(IMAGE_PATH + 'player_jump.png').convert_alpha()
+        return Alien._alien_jump_surface
+
     def __init__(self):
         super().__init__()
 
         self.dx, self.dy = 0, 0
 
-        self.alien_stand_surface = pygame.image.load(IMAGE_PATH + 'player_stand.png').convert_alpha()
-        self.alien_walk1_surface = pygame.image.load(IMAGE_PATH + 'player_walk_1.png').convert_alpha()
-        self.alien_walk2_surface = pygame.image.load(IMAGE_PATH + 'player_walk_2.png').convert_alpha()
-        self.alien_jump_surface = pygame.image.load(IMAGE_PATH + 'player_jump.png').convert_alpha()
         self.alien_walk_surfaces = [self.alien_walk1_surface, self.alien_walk2_surface]
         self.walk_animation_idx = 0
 
@@ -30,6 +55,7 @@ class Alien(Sprite):
         self.jump_sound.set_volume(0.5)
 
     def update(self):
+        # select character animation image
         if (self.dx, self.dy) == (0, 0):
             self.image = self.alien_stand_surface
         elif self.dy != 0:
@@ -37,8 +63,7 @@ class Alien(Sprite):
         else:
             self.image = self.alien_walk_surfaces[int(self.walk_animation_idx)]
 
-        self.rect.x += self.dx * GameConfig.MOVE_SCALE
-
+        # handle character movement
         if self.dx > 0:
             self.rect.x += min(self.dx * GameConfig.MOVE_SCALE, GameConfig.SCREEN_WIDTH - self.rect.right)
         elif self.dx < 0:
