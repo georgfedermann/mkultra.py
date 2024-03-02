@@ -36,27 +36,32 @@ class HealthBar(Sprite):
 
         self.background = pygame.image.load("graphics/healthbar//background.png").convert_alpha()
 
+        self.dirty = True
+
     def update(self) -> None:
-        self.image.blit(self.background, (0, 0))
+        if self.dirty:
+            print('Re-render health bar')
+            self.image.blit(self.background, (0, 0))
 
-        health_bar_background = pygame.Rect(HealthBar.INNER_ORIGIN, (HealthBar.INNER_WIDTH, HealthBar.INNER_HEIGHT))
-        pygame.draw.rect(self.image, HealthBar.DARK_GREEN, health_bar_background)
+            health_bar_background = pygame.Rect(HealthBar.INNER_ORIGIN, (HealthBar.INNER_WIDTH, HealthBar.INNER_HEIGHT))
+            pygame.draw.rect(self.image, HealthBar.DARK_GREEN, health_bar_background)
 
-        current_health_width = HealthBar.INNER_WIDTH * self.percentage
-        health_bar = pygame.Rect(HealthBar.INNER_ORIGIN, (current_health_width, HealthBar.INNER_HEIGHT))
-        pygame.draw.rect(self.image, HealthBar.GREEN, health_bar)
+            current_health_width = HealthBar.INNER_WIDTH * self.percentage
+            health_bar = pygame.Rect(HealthBar.INNER_ORIGIN, (current_health_width, HealthBar.INNER_HEIGHT))
+            pygame.draw.rect(self.image, HealthBar.GREEN, health_bar)
 
-        # Add glossy effect
-        for i in range(HealthBar.INNER_HEIGHT // 2):
-            alpha = 220 - ( i * (120 // (HealthBar.INNER_HEIGHT // 2)))
-            glossy_effect = pygame.Surface((current_health_width, 1))
-            glossy_effect.set_alpha(alpha)
-            glossy_effect.fill(HealthBar.WHITE)
-            self.image.blit(glossy_effect, (HealthBar.INNER_ORIGIN[0], HealthBar.INNER_ORIGIN[1] + i))
+            # Add glossy effect
+            for i in range(HealthBar.INNER_HEIGHT // 2):
+                alpha = 220 - ( i * (120 // (HealthBar.INNER_HEIGHT // 2)))
+                glossy_effect = pygame.Surface((current_health_width, 1))
+                glossy_effect.set_alpha(alpha)
+                glossy_effect.fill(HealthBar.WHITE)
+                self.image.blit(glossy_effect, (HealthBar.INNER_ORIGIN[0], HealthBar.INNER_ORIGIN[1] + i))
 
-        line = pygame.Surface((current_health_width, 2))
-        line.fill(HealthBar.WHITE)
-        self.image.blit(line, (HealthBar.INNER_ORIGIN[0], HealthBar.INNER_ORIGIN[1] + HealthBar.INNER_HEIGHT // 3))
+            line = pygame.Surface((current_health_width, 2))
+            line.fill(HealthBar.WHITE)
+            self.image.blit(line, (HealthBar.INNER_ORIGIN[0], HealthBar.INNER_ORIGIN[1] + HealthBar.INNER_HEIGHT // 3))
+            self.dirty = False
 
     def set_percentage(self, percentage: float) -> None:
         """
@@ -66,3 +71,4 @@ class HealthBar(Sprite):
         """
         assert 0 <= percentage <= 1, "Percentage must be a value between 0 and 1 but was " + str(percentage)
         self.percentage = percentage
+        self.dirty = True

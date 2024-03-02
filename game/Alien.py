@@ -105,4 +105,3 @@ class Alien(Sprite):
         elif event.type == pygame.JOYAXISMOTION:
             if event.axis == 0:
                 self.dx = event.value
-

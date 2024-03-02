@@ -87,13 +87,15 @@ class Game():
                     if fly.can_do_damage(pygame.time.get_ticks()):
                         fly.set_damage_time(pygame.time.get_ticks())
                         player.life_energy -= GameConfig.FLY_DAMAGE
+                        self.health_bar.set_percentage(self.alien.sprite.life_energy / self.alien.sprite.max_life_energy)
                         if player.life_energy <= 0:
                             self.mode = 'hiscores'
 
             if hit_count > 1:
                 self.achievement_sound.play()
                 self.score += GameConfig.FLY_SCORE * hit_count
-                self.alien.sprite.life_energy = self.alien.sprite.max_life_energy
+                player.life_energy = player.max_life_energy
+                self.health_bar.set_percentage(self.alien.sprite.life_energy / self.alien.sprite.max_life_energy)
 
         # snails
         snails = pygame.sprite.spritecollide(self.alien.sprite, self.snail_group, False)
@@ -101,6 +103,7 @@ class Game():
             for snail in snails:
                 if snail.can_do_damage(pygame.time.get_ticks()):
                     player.life_energy -= GameConfig.SNAIL_DAMAGE
+                    self.health_bar.set_percentage(self.alien.sprite.life_energy / self.alien.sprite.max_life_energy)
                     snail.set_damage_time(pygame.time.get_ticks())
             if player.life_energy <= 0:
                 self.mode = 'hiscores'
@@ -129,7 +132,6 @@ class Game():
         self.fly_group.draw(self.screen)
         self.snail_group.update()
         self.snail_group.draw(self.screen)
-        self.health_bar.set_percentage(self.alien.sprite.life_energy / self.alien.sprite.max_life_energy)
         self.dead_critter_group.update()
         self.dead_critter_group.draw(self.screen)
 
