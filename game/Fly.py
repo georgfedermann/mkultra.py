@@ -13,11 +13,8 @@ class Fly(Monster):
     @property
     def punch_sound(self):
         if Fly._punch_sound is None:
-            print(f'Loading punch sound from file')
             Fly._punch_sound = pygame.mixer.Sound('audio/punch.mp3')
             Fly._punch_sound.set_volume(0.5)
-        else:
-            print(f'Playing punch sound from memory')
         return Fly._punch_sound
 
     def __init__(self):
