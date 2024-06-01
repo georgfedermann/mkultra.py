@@ -1,7 +1,5 @@
 from .GameConfig import GameConfig
 from .Monster import Monster
-import pygame
-from pygame.sprite import Sprite
 import random
 
 IMAGE_PATH = 'graphics/snail'

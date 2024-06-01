@@ -6,7 +6,7 @@ from game.ScoreBoard import ScoreBoard
 from game.Snail import Snail
 import pygame
 from pygame.joystick import Joystick
-from pygame.sprite import Group,  GroupSingle
+from pygame.sprite import Group, GroupSingle
 import random
 
 class Game():
