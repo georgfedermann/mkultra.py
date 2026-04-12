@@ -113,7 +113,7 @@ class Game():
                     # Only do damage if explosion is not in cooldown
                     if snail.can_explosion_do_damage(pygame.time.get_ticks()):
                         player.life_energy -= GameConfig.SNAIL_DAMAGE
-                        self.health_bar.set_percentage(self.alien.sprite.life_energy / self.alien.sprite.max_life_energy)
+                        self.health_bar.set_percentage(max(0, self.alien.sprite.life_energy / self.alien.sprite.max_life_energy))
                         snail.set_explosion_damage_time(pygame.time.get_ticks())
             if player.life_energy <= 0:
                 self.mode = 'hiscores'

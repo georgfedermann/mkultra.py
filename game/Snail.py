@@ -1,11 +1,21 @@
 from .GameConfig import GameConfig
 from .Monster import Monster
 from .SnailExplosion import SnailExplosion
+import pygame
 import random
 
 IMAGE_PATH = 'graphics/snail'
 
 class Snail(Monster):
+
+    _explosion_sound = None
+
+    @property
+    def explosion_sound(self):
+        if Snail._explosion_sound is None:
+            Snail._explosion_sound = pygame.mixer.Sound('audio/explosion.wav')
+            Snail._explosion_sound.set_volume(1.0)
+        return Snail._explosion_sound
 
     def __init__(self):
         super().__init__([f'{IMAGE_PATH}/snail1.png', f'{IMAGE_PATH}/snail2.png'],
@@ -27,6 +37,7 @@ class Snail(Monster):
         """Replace snail with explosion animation."""
         self.explosion = SnailExplosion(self.rect.center)
         self.active = False
+        self.explosion_sound.play()
 
     def update(self):
         # If hit, don't move the snail anymore
