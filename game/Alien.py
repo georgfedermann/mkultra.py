@@ -76,7 +76,7 @@ class Alien(Sprite):
                 self.image = self.alien_stand_surface
                 self.dy = 0
 
-        self.walk_animation_idx = (self.walk_animation_idx + 0.1) % 2
+        self.walk_animation_idx = (self.walk_animation_idx + GameConfig.ANIMATION_SPEED) % 2
 
     def process_event(self, event):
         if event.type == pygame.KEYDOWN:

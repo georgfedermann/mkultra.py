@@ -101,12 +101,27 @@ class Game():
         snails = pygame.sprite.spritecollide(self.alien.sprite, self.snail_group, False)
         if snails:
             for snail in snails:
-                if snail.can_do_damage(pygame.time.get_ticks()):
+                # Only check for damage from snail itself (not explosion)
+                if not snail.explosion and snail.can_do_damage(pygame.time.get_ticks()):
                     player.life_energy -= GameConfig.SNAIL_DAMAGE
                     self.health_bar.set_percentage(self.alien.sprite.life_energy / self.alien.sprite.max_life_energy)
                     snail.set_damage_time(pygame.time.get_ticks())
+                    # Replace snail with explosion
+                    snail.hit()
+                # Check if explosion exists and can do damage
+                elif snail.explosion and not snail.is_explosion_complete():
+                    # Only do damage if explosion is not in cooldown
+                    if snail.can_explosion_do_damage(pygame.time.get_ticks()):
+                        player.life_energy -= GameConfig.SNAIL_DAMAGE
+                        self.health_bar.set_percentage(self.alien.sprite.life_energy / self.alien.sprite.max_life_energy)
+                        snail.set_explosion_damage_time(pygame.time.get_ticks())
             if player.life_energy <= 0:
                 self.mode = 'hiscores'
+
+        # Remove snails whose explosions have completed
+        for snail in self.snail_group.sprites():
+            if snail.explosion and snail.is_explosion_complete():
+                snail.kill()
 
     def run_game(self):
         for event in pygame.event.get():
@@ -131,7 +146,17 @@ class Game():
         self.fly_group.update()
         self.fly_group.draw(self.screen)
         self.snail_group.update()
-        self.snail_group.draw(self.screen)
+
+        # Draw snails and their explosions
+        for snail in self.snail_group.sprites():
+            if snail.should_draw_snail():
+                # Draw the snail itself
+                self.screen.blit(snail.image, snail.rect)
+            elif snail.explosion:
+                # Draw the explosion instead of the snail
+                snail.explosion.update()
+                self.screen.blit(snail.explosion.image, snail.explosion.rect)
+
         self.dead_critter_group.update()
         self.dead_critter_group.draw(self.screen)
 
@@ -209,7 +234,7 @@ class Game():
         self.screen.blit(label_run_surface, label_run_rect)
         self.screen.blit(label_score_surface, label_score_rect)
         self.screen.blit(mkultra_label, mkultra_label.get_rect(center = (GameConfig.SCREEN_WIDTH / 2, GameConfig.SCREEN_HEIGHT / 2)))
-    
+
     def run_mkultra(self):
         while self.keep_running:
             if self.mode == 'splash':
