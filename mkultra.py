@@ -58,7 +58,6 @@ class Game():
         self.health_bar.set_percentage(self.alien.sprite.life_energy / self.alien.sprite.max_life_energy)
         self.score = 0
         self.score_board.set_score(self.score)
-        self.score = 0
 
     def add_critter(self):
         if random.randint(0,10) >= 4:
@@ -86,7 +85,7 @@ class Game():
                     self.fly_group.add(fly)
                     if fly.can_do_damage(pygame.time.get_ticks()):
                         fly.set_damage_time(pygame.time.get_ticks())
-                        player.life_energy -= GameConfig.FLY_DAMAGE
+                        player.apply_damage(GameConfig.FLY_DAMAGE)
                         self.health_bar.set_percentage(self.alien.sprite.life_energy / self.alien.sprite.max_life_energy)
                         if player.life_energy <= 0:
                             self.mode = 'hiscores'
@@ -103,7 +102,7 @@ class Game():
             for snail in snails:
                 # Only check for damage from snail itself (not explosion)
                 if not snail.explosion and snail.can_do_damage(pygame.time.get_ticks()):
-                    player.life_energy -= GameConfig.SNAIL_DAMAGE
+                    player.apply_damage(GameConfig.SNAIL_DAMAGE)
                     self.health_bar.set_percentage(self.alien.sprite.life_energy / self.alien.sprite.max_life_energy)
                     snail.set_damage_time(pygame.time.get_ticks())
                     # Replace snail with explosion
@@ -112,7 +111,7 @@ class Game():
                 elif snail.explosion and not snail.is_explosion_complete():
                     # Only do damage if explosion is not in cooldown
                     if snail.can_explosion_do_damage(pygame.time.get_ticks()):
-                        player.life_energy -= GameConfig.SNAIL_DAMAGE
+                        player.apply_damage(GameConfig.SNAIL_DAMAGE)
                         self.health_bar.set_percentage(max(0, self.alien.sprite.life_energy / self.alien.sprite.max_life_energy))
                         snail.set_explosion_damage_time(pygame.time.get_ticks())
             if player.life_energy <= 0:

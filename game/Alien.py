@@ -54,6 +54,11 @@ class Alien(Sprite):
         self.jump_sound = pygame.mixer.Sound('audio/cjump.mp3')
         self.jump_sound.set_volume(0.5)
 
+    def apply_damage(self, damage):
+        assert self.life_energy > 0, f"life_energy must be >= 0 but was {self.life_energy}"
+        assert damage >= 0, f"damage must be >= 0 but was {damage}"
+        self.life_energy -= min(self.life_energy, damage)
+
     def update(self):
         # select character animation image
         if (self.dx, self.dy) == (0, 0):
