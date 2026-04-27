@@ -1,14 +1,11 @@
 import random
-from pathlib import Path
 
-import pygame
+from mkultra.assets import load_sound
 
 from .GameConfig import GameConfig
 from .Monster import Monster
 from .SnailExplosion import SnailExplosion
 
-_ASSET_DIR = Path(__file__).resolve().parent.parent.parent.parent / "assets"
-_IMAGE_PATH = _ASSET_DIR / "graphics" / "snail"
 
 class Snail(Monster):
 
@@ -17,12 +14,12 @@ class Snail(Monster):
     @property
     def explosion_sound(self):
         if Snail._explosion_sound is None:
-            Snail._explosion_sound = pygame.mixer.Sound(str(_ASSET_DIR / 'audio' / 'explosion.wav'))
+            Snail._explosion_sound = load_sound('audio/explosion.wav')
             Snail._explosion_sound.set_volume(1.0)
         return Snail._explosion_sound
 
     def __init__(self):
-        super().__init__([str(_IMAGE_PATH / 'snail1.png'), str(_IMAGE_PATH / 'snail2.png')],
+        super().__init__(['graphics/snail/snail1.png', 'graphics/snail/snail2.png'],
                          (random.randint(900, 1100), GameConfig.GROUND_LEVEL))
 
         self.damage_cooldown = 750

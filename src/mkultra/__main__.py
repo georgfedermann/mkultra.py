@@ -1,24 +1,16 @@
 import random
-from pathlib import Path
 
 import pygame
 from pygame.joystick import Joystick
 from pygame.sprite import Group, GroupSingle
 
+from mkultra.assets import load_font, load_image, load_sound
 from mkultra.components.HealthBar import HealthBar
 from mkultra.game.Alien import Alien
 from mkultra.game.Fly import Fly
 from mkultra.game.GameConfig import GameConfig
 from mkultra.game.ScoreBoard import ScoreBoard
 from mkultra.game.Snail import Snail
-
-# Resolve asset paths relative to package directory
-_ASSET_DIR = Path(__file__).resolve().parent.parent.parent / "assets"
-
-
-def asset(path: str) -> Path:
-    """Return an absolute path to an asset file."""
-    return _ASSET_DIR / path
 
 
 class Game():
@@ -27,9 +19,9 @@ class Game():
         self.screen = pygame.display.set_mode(GameConfig.SCREEN_DIMENSION)
         pygame.display.set_caption('MK Ultra')
 
-        self.sky_surface = pygame.image.load(str(asset('graphics/Sky.png'))).convert_alpha()
-        self.ground_surface = pygame.image.load(str(asset('graphics/ground.png'))).convert_alpha()
-        self.font = pygame.font.Font(str(asset('font/Pixeltype.ttf')), 50)
+        self.sky_surface = load_image('graphics/Sky.png')
+        self.ground_surface = load_image('graphics/ground.png')
+        self.font = load_font('font/Pixeltype.ttf', 50)
 
         self.score = 0
         self.score_board = ScoreBoard(self)
@@ -52,15 +44,15 @@ class Game():
         self.keep_running = True
         self.mode = 'splash'
 
-        self.game_music = pygame.mixer.Sound(str(asset('audio/music.wav')))
+        self.game_music = load_sound('audio/music.wav')
         self.game_music.set_volume(0.2)
 
-        self.intro_music = pygame.mixer.Sound(str(asset('audio/intro.mp3')))
+        self.intro_music = load_sound('audio/intro.mp3')
         self.intro_music.set_volume(0.2)
 
-        self.after_game_music = pygame.mixer.Sound(str(asset('audio/hiscore.mp3')))
+        self.after_game_music = load_sound('audio/hiscore.mp3')
         self.after_game_music.set_volume(0.2)
-        self.achievement_sound = pygame.mixer.Sound(str(asset('audio/achievement.mp3')))
+        self.achievement_sound = load_sound('audio/achievement.mp3')
 
     def reset_game(self):
         self.alien.add(Alien())
@@ -201,7 +193,7 @@ class Game():
         label_mkultra_rect = label_mkultra_surface.get_rect(midbottom = (GameConfig.SCREEN_WIDTH / 2, 80))
         label_run_surface = self.font.render('Press <Space> to run', False, GameConfig.MENU_TITLE_COLOR)
         label_run_rect = label_run_surface.get_rect(midbottom = (GameConfig.SCREEN_WIDTH / 2, 350))
-        mkultra_label = pygame.transform.scale_by(pygame.image.load(str(asset('graphics/Player/player_stand.png'))).convert_alpha(), 2)
+        mkultra_label = pygame.transform.scale_by(load_image('graphics/Player/player_stand.png'), 2)
         self.screen.blit(label_mkultra_surface, label_mkultra_rect)
         self.screen.blit(label_run_surface, label_run_rect)
         self.screen.blit(mkultra_label, mkultra_label.get_rect(center = (GameConfig.SCREEN_WIDTH / 2, GameConfig.SCREEN_HEIGHT / 2)))
@@ -239,7 +231,7 @@ class Game():
         label_score_surface = self.font.render(f'{self.score}', True, (255, 196, 0))
         label_score_surface = pygame.transform.rotozoom(label_score_surface, 45, 1)
         label_score_rect = label_score_surface.get_rect(center = (600, 200))
-        mkultra_label = pygame.transform.scale_by(pygame.image.load(str(asset('graphics/Player/player_stand.png'))).convert_alpha(), 2)
+        mkultra_label = pygame.transform.scale_by(load_image('graphics/Player/player_stand.png'), 2)
         self.screen.blit(label_mkultra_surface, label_mkultra_rect)
         self.screen.blit(label_run_surface, label_run_rect)
         self.screen.blit(label_score_surface, label_score_rect)

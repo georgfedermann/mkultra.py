@@ -1,9 +1,8 @@
-from pathlib import Path
-
 import pygame
 from pygame.sprite import Sprite
 
-_ASSET_DIR = Path(__file__).resolve().parent.parent.parent.parent / "assets"
+from mkultra.assets import load_image
+
 
 class HealthBar(Sprite):
     """
@@ -38,7 +37,7 @@ class HealthBar(Sprite):
         self.image = pygame.Surface((HealthBar.OUTER_WIDTH, HealthBar.OUTER_HEIGHT))
         self.rect = self.image.get_rect(topleft = position)
 
-        self.background = pygame.image.load(str(_ASSET_DIR / 'graphics' / 'healthbar' / 'background.png')).convert_alpha()
+        self.background = load_image('graphics/healthbar/background.png')
 
         self.dirty = True
 

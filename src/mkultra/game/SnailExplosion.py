@@ -1,12 +1,11 @@
-from pathlib import Path
-
 import pygame
 from pygame.sprite import Sprite
 
+from mkultra.assets import load_image
+
 from .GameConfig import GameConfig
 
-_ASSET_DIR = Path(__file__).resolve().parent.parent.parent.parent / "assets"
-_IMAGE_PATH = _ASSET_DIR / "graphics" / "snail_explosion.png"
+_IMAGE_PATH = 'graphics/snail_explosion.png'
 
 class SnailExplosion(Sprite):
 
@@ -17,7 +16,7 @@ class SnailExplosion(Sprite):
 
         # Load the sprite sheet if not already cached
         if _IMAGE_PATH not in SnailExplosion.image_cache:
-            sprite_sheet = pygame.image.load(str(_IMAGE_PATH)).convert_alpha()
+            sprite_sheet = load_image(_IMAGE_PATH)
             SnailExplosion.image_cache[_IMAGE_PATH] = sprite_sheet
 
         # Generate individual frames from the sprite sheet

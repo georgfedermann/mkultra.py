@@ -1,12 +1,10 @@
-from pathlib import Path
-
 import pygame
 from pygame.sprite import Sprite
 
+from mkultra.assets import load_image, load_sound
+
 from .GameConfig import GameConfig
 
-_ASSET_DIR = Path(__file__).resolve().parent.parent.parent.parent / "assets"
-_IMAGE_PATH = _ASSET_DIR / "graphics" / "Player"
 
 class Alien(Sprite):
 
@@ -18,25 +16,25 @@ class Alien(Sprite):
     @property
     def alien_stand_surface(self):
         if Alien._alien_stand_surface is None:
-            Alien._alien_stand_surface = pygame.image.load(str(_IMAGE_PATH / 'player_stand.png')).convert_alpha()
+            Alien._alien_stand_surface = load_image('graphics/Player/player_stand.png')
         return Alien._alien_stand_surface
 
     @property
     def alien_walk1_surface(self):
         if Alien._alien_walk1_surface is None:
-            Alien._alien_walk1_surface = pygame.image.load(str(_IMAGE_PATH / 'player_walk_1.png')).convert_alpha()
+            Alien._alien_walk1_surface = load_image('graphics/Player/player_walk_1.png')
         return Alien._alien_walk1_surface
 
     @property
     def alien_walk2_surface(self):
         if Alien._alien_walk2_surface is None:
-            Alien._alien_walk2_surface = pygame.image.load(str(_IMAGE_PATH / 'player_walk_2.png')).convert_alpha()
+            Alien._alien_walk2_surface = load_image('graphics/Player/player_walk_2.png')
         return Alien._alien_walk2_surface
 
     @property
     def alien_jump_surface(self):
         if Alien._alien_jump_surface is None:
-            Alien._alien_jump_surface = pygame.image.load(str(_IMAGE_PATH / 'player_jump.png')).convert_alpha()
+            Alien._alien_jump_surface = load_image('graphics/Player/player_jump.png')
         return Alien._alien_jump_surface
 
     def __init__(self):
@@ -55,7 +53,7 @@ class Alien(Sprite):
         self.max_life_energy = 100
         self.life_energy = self.max_life_energy
 
-        self.jump_sound = pygame.mixer.Sound(str(_ASSET_DIR / 'audio' / 'cjump.mp3'))
+        self.jump_sound = load_sound('audio/cjump.mp3')
         self.jump_sound.set_volume(0.5)
 
     def apply_damage(self, damage):

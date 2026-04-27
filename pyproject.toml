@@ -6,13 +6,31 @@ authors = [
     {name = "Georg Federmann"}
 ]
 readme = "README.md"
-requires-python = "^3.10"
+requires-python = ">=3.10"
 dependencies = [
     "pygame==2.5.2",
 ]
 
+[project.scripts]
+mkultra = "mkultra.__main__:main"
+
 [tool.poetry]
-packages = []
+packages = [{include = "mkultra", from = "src"}]
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.8"
+pytest = "^8.0"
+
+[tool.ruff]
+src = ["src"]
+line-length = 140
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N"]
+ignore = ["N999"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]

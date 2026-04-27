@@ -1,13 +1,12 @@
 import random
-from pathlib import Path
 
 import pygame
+
+from mkultra.assets import load_sound
 
 from .GameConfig import GameConfig
 from .Monster import Monster
 
-_ASSET_DIR = Path(__file__).resolve().parent.parent.parent.parent / "assets"
-_IMAGE_PATH = _ASSET_DIR / "graphics" / "Fly"
 
 class Fly(Monster):
 
@@ -16,12 +15,12 @@ class Fly(Monster):
     @property
     def punch_sound(self):
         if Fly._punch_sound is None:
-            Fly._punch_sound = pygame.mixer.Sound(str(_ASSET_DIR / 'audio' / 'punch.mp3'))
+            Fly._punch_sound = load_sound('audio/punch.mp3')
             Fly._punch_sound.set_volume(0.5)
         return Fly._punch_sound
 
     def __init__(self):
-        super().__init__([str(_IMAGE_PATH / 'fly1.png'), str(_IMAGE_PATH / 'fly2.png')],
+        super().__init__(['graphics/Fly/Fly1.png', 'graphics/Fly/Fly2.png'],
                          (random.randint(900, 1100), GameConfig.FLIGHT_LEVEL))
 
         self.dx = random.choice([3,4,5,6])
