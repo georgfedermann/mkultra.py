@@ -2,6 +2,8 @@
 from mkultra.assets import asset_path
 from mkultra.components.HealthBar import HealthBar
 from mkultra.game.Alien import Alien
+from mkultra.game.ComboEffect import ComboEffect
+from mkultra.game.FloatingScore import FloatingScore
 from mkultra.game.Fly import Fly
 from mkultra.game.GameConfig import GameConfig
 from mkultra.game.Monster import Monster
@@ -12,7 +14,9 @@ from mkultra.game.SnailExplosion import SnailExplosion
 
 def test_modules_import():
     assert Alien
+    assert ComboEffect
     assert Fly
+    assert FloatingScore
     assert HealthBar
     assert Monster
     assert ScoreBoard
@@ -30,3 +34,14 @@ def test_game_config_defaults():
 
 def test_asset_path_resolves_project_assets():
     assert asset_path('font/Pixeltype.ttf').is_file()
+
+
+def test_alien_damage_clamps_at_zero():
+    alien = Alien.__new__(Alien)
+    alien.max_life_energy = 100
+    alien.life_energy = alien.max_life_energy
+
+    alien.apply_damage(alien.max_life_energy)
+    alien.apply_damage(10)
+
+    assert alien.life_energy == 0

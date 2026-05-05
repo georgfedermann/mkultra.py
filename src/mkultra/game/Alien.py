@@ -47,8 +47,12 @@ class Alien(Sprite):
 
         self.image = self.alien_stand_surface
         self.rect = self.image.get_rect(midbottom = (200, 300))
+        self.base_image = self.image
 
         self.keydown_a, self.keydown_d = False, False
+        self.dying = False
+        self.death_started_at = 0
+        self.death_origin_x = self.rect.centerx
 
         self.max_life_energy = 100
         self.life_energy = self.max_life_energy
@@ -57,11 +61,15 @@ class Alien(Sprite):
         self.jump_sound.set_volume(0.5)
 
     def apply_damage(self, damage):
-        assert self.life_energy > 0, f"life_energy must be >= 0 but was {self.life_energy}"
+        assert self.life_energy >= 0, f"life_energy must be >= 0 but was {self.life_energy}"
         assert damage >= 0, f"damage must be >= 0 but was {damage}"
         self.life_energy -= min(self.life_energy, damage)
 
     def update(self):
+        if self.dying:
+            self.update_death_animation()
+            return
+
         # select character animation image
         if (self.dx, self.dy) == (0, 0):
             self.image = self.alien_stand_surface
@@ -69,6 +77,7 @@ class Alien(Sprite):
             self.image = self.alien_jump_surface
         else:
             self.image = self.alien_walk_surfaces[int(self.walk_animation_idx)]
+        self.base_image = self.image
 
         # handle character movement
         if self.dx > 0:
@@ -85,7 +94,32 @@ class Alien(Sprite):
 
         self.walk_animation_idx = (self.walk_animation_idx + GameConfig.ANIMATION_SPEED) % 2
 
+    def start_death_animation(self):
+        self.dying = True
+        self.dx = 0
+        self.dy = 0
+        self.death_started_at = pygame.time.get_ticks()
+        self.death_origin_x = self.rect.centerx
+        self.base_image = self.image
+
+    def update_death_animation(self):
+        progress = min(1, (pygame.time.get_ticks() - self.death_started_at) / GameConfig.DEATH_ANIMATION_DURATION_MS)
+        alpha = max(0, int(255 * (1 - progress)))
+        wobble = int(GameConfig.DEATH_WOBBLE_AMPLITUDE * pygame.math.Vector2(1, 0).rotate(progress * 1440).x)
+
+        self.rect.centerx = self.death_origin_x + wobble
+        self.rect.y -= GameConfig.DEATH_FLOAT_SPEED
+        self.image = self.base_image.copy()
+        self.image.set_alpha(alpha)
+
+    def is_death_animation_complete(self):
+        elapsed = pygame.time.get_ticks() - self.death_started_at
+        return self.dying and (elapsed >= GameConfig.DEATH_ANIMATION_DURATION_MS or self.rect.bottom < 0)
+
     def process_event(self, event):
+        if self.dying:
+            return
+
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_a:
                 self.keydown_a = True

@@ -6,7 +6,7 @@ authors = [
     {name = "Georg Federmann"}
 ]
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.10,<3.13"
 dependencies = [
     "pygame==2.5.2",
 ]

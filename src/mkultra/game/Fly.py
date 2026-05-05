@@ -19,11 +19,14 @@ class Fly(Monster):
             Fly._punch_sound.set_volume(0.5)
         return Fly._punch_sound
 
-    def __init__(self):
-        super().__init__(['graphics/Fly/Fly1.png', 'graphics/Fly/Fly2.png'],
-                         (random.randint(900, 1100), GameConfig.FLIGHT_LEVEL))
+    def __init__(self, start_x=None):
+        if start_x is None:
+            start_x = random.randint(GameConfig.SPAWN_X_MIN, GameConfig.SPAWN_X_MAX)
 
-        self.dx = random.choice([3,4,5,6])
+        super().__init__(['graphics/Fly/Fly1.png', 'graphics/Fly/Fly2.png'],
+                         (start_x, GameConfig.FLIGHT_LEVEL))
+
+        self.dx = random.choice([3, 4, 5, 6])
         self.active = True
 
         self.damage_cooldown = 750
