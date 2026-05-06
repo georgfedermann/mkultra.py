@@ -9,6 +9,7 @@ from mkultra.game.GameConfig import GameConfig
 from mkultra.game.Level import Level
 from mkultra.game.Monster import Monster
 from mkultra.game.Platform import Platform
+from mkultra.game.PlatformerAtlas import PlatformerAtlas
 from mkultra.game.ScoreBoard import ScoreBoard
 from mkultra.game.Snail import Snail
 from mkultra.game.SnailExplosion import SnailExplosion
@@ -23,6 +24,7 @@ def test_modules_import():
     assert Level
     assert Monster
     assert Platform
+    assert PlatformerAtlas
     assert ScoreBoard
     assert Snail
     assert SnailExplosion
@@ -38,6 +40,21 @@ def test_game_config_defaults():
 
 def test_asset_path_resolves_project_assets():
     assert asset_path('font/Pixeltype.ttf').is_file()
+
+
+def test_platformer_atlas_uses_reported_sprite_locations():
+    assert PlatformerAtlas.RECTS['player_stand'].x == 440
+    assert PlatformerAtlas.RECTS['player_walk_1'].x == 646
+    assert PlatformerAtlas.RECTS['player_dance'].x == 484
+    assert PlatformerAtlas.RECTS['player_walk_2'].x == 668
+    assert PlatformerAtlas.RECTS['player_climb_1'].x == 554
+    assert PlatformerAtlas.RECTS['player_climb_2'].x == 577
+    assert PlatformerAtlas.RECTS['player_death'].x == 531
+    assert PlatformerAtlas.RECTS['fly_1'] == (300, 328, 22, 20)
+    assert PlatformerAtlas.RECTS['fly_2'] == (324, 328, 22, 20)
+    assert PlatformerAtlas.RECTS['coin'] == (416, 50, 22, 20)
+    assert PlatformerAtlas.RECTS['heart_full'] == (436, 95, 22, 20)
+    assert PlatformerAtlas.RECTS['heart_empty'] == (484, 95, 22, 20)
 
 
 def test_alien_damage_clamps_at_zero():
