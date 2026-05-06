@@ -45,16 +45,43 @@ def test_asset_path_resolves_project_assets():
 def test_platformer_atlas_uses_reported_sprite_locations():
     assert PlatformerAtlas.RECTS['player_stand'].x == 440
     assert PlatformerAtlas.RECTS['player_walk_1'].x == 646
-    assert PlatformerAtlas.RECTS['player_dance'].x == 484
+    assert PlatformerAtlas.RECTS['player_jump'].x == 484
     assert PlatformerAtlas.RECTS['player_walk_2'].x == 668
     assert PlatformerAtlas.RECTS['player_climb_1'].x == 554
     assert PlatformerAtlas.RECTS['player_climb_2'].x == 577
     assert PlatformerAtlas.RECTS['player_death'].x == 531
     assert PlatformerAtlas.RECTS['fly_1'] == (300, 328, 22, 20)
-    assert PlatformerAtlas.RECTS['fly_2'] == (324, 328, 22, 20)
+    assert PlatformerAtlas.RECTS['fly_2'] == (324, 327, 22, 20)
     assert PlatformerAtlas.RECTS['coin'] == (416, 50, 22, 20)
     assert PlatformerAtlas.RECTS['heart_full'] == (436, 95, 22, 20)
     assert PlatformerAtlas.RECTS['heart_empty'] == (484, 95, 22, 20)
+
+
+def test_alien_uses_platformer_atlas_player_frames():
+    Alien._alien_stand_surface = None
+    Alien._alien_walk1_surface = None
+    Alien._alien_walk2_surface = None
+    Alien._alien_jump_surface = None
+
+    assert Alien.__new__(Alien).alien_stand_surface.get_size() == (88, 84)
+    assert Alien.__new__(Alien).alien_walk1_surface.get_size() == (88, 84)
+    assert Alien.__new__(Alien).alien_walk2_surface.get_size() == (88, 84)
+    assert Alien.__new__(Alien).alien_jump_surface.get_size() == (88, 84)
+    assert Alien.__new__(Alien).alien_stand_surface.get_at((0, 0)).a == 0
+
+
+def test_platformer_atlas_uses_real_transparency():
+    atlas = PlatformerAtlas()
+
+    assert atlas.sprite('player_stand').get_at((0, 0)).a == 0
+    assert atlas.sprite('fly_1').get_at((0, 0)).a == 0
+
+
+def test_fly_uses_platformer_atlas_frames():
+    fly = Fly()
+
+    assert fly.image.get_size() == (88, 80)
+    assert fly.image.get_at((0, 0)).a == 0
 
 
 def test_alien_damage_clamps_at_zero():

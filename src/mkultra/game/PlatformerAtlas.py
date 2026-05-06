@@ -17,14 +17,14 @@ class PlatformerAtlas:
 
     RECTS = {
         'player_stand': pygame.Rect(440, PLAYER_Y, PLAYER_WIDTH, PLAYER_HEIGHT),
-        'player_dance': pygame.Rect(484, PLAYER_Y, PLAYER_WIDTH, PLAYER_HEIGHT),
+        'player_jump': pygame.Rect(484, PLAYER_Y, PLAYER_WIDTH, PLAYER_HEIGHT),
         'player_death': pygame.Rect(531, PLAYER_Y, PLAYER_WIDTH, PLAYER_HEIGHT),
         'player_climb_1': pygame.Rect(554, PLAYER_Y, PLAYER_WIDTH, PLAYER_HEIGHT),
         'player_climb_2': pygame.Rect(577, PLAYER_Y, PLAYER_WIDTH, PLAYER_HEIGHT),
         'player_walk_1': pygame.Rect(646, PLAYER_Y, PLAYER_WIDTH, PLAYER_HEIGHT),
         'player_walk_2': pygame.Rect(668, PLAYER_Y, PLAYER_WIDTH, PLAYER_HEIGHT),
         'fly_1': pygame.Rect(300, 328, 22, 20),
-        'fly_2': pygame.Rect(324, 328, 22, 20),
+        'fly_2': pygame.Rect(324, 327, 22, 20),
         'coin': pygame.Rect(416, 50, 22, 20),
         'heart_full': pygame.Rect(436, 95, 22, 20),
         'heart_empty': pygame.Rect(484, 95, 22, 20),
@@ -54,11 +54,17 @@ class PlatformerAtlas:
         cache_key = (name, scale)
         if cache_key not in self._cache:
             surface = self.spritesheet.subsurface(self.RECTS[name]).copy()
-            surface.set_colorkey(self.COLOR_KEY)
+            surface = self.with_transparency(surface)
             if scale != 1:
                 surface = pygame.transform.scale_by(surface, scale)
             self._cache[cache_key] = surface
         return self._cache[cache_key]
+
+    def with_transparency(self, surface):
+        surface.set_colorkey(self.COLOR_KEY)
+        transparent = pygame.Surface(surface.get_size(), pygame.SRCALPHA)
+        transparent.blit(surface, (0, 0))
+        return transparent
 
     def tile(self, name):
         return self.sprite(name)

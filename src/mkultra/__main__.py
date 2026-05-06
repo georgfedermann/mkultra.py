@@ -486,7 +486,7 @@ class Game():
         label_score_surface = self.font.render(f'{self.score}', True, (255, 196, 0))
         label_score_surface = pygame.transform.rotozoom(label_score_surface, 45, 1)
         label_score_rect = label_score_surface.get_rect(center = (600, 200))
-        mkultra_label = pygame.transform.scale_by(platformer_atlas().sprite('player_dance'), 2)
+        mkultra_label = pygame.transform.scale_by(platformer_atlas().sprite('player_jump'), 2)
         self.screen.blit(label_mkultra_surface, label_mkultra_rect)
         self.screen.blit(label_run_surface, label_run_rect)
         self.screen.blit(label_score_surface, label_score_rect)

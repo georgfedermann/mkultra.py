@@ -1,9 +1,10 @@
 import pygame
 from pygame.sprite import Sprite
 
-from mkultra.assets import load_image, load_sound
+from mkultra.assets import load_sound
 
 from .GameConfig import GameConfig
+from .PlatformerAtlas import platformer_atlas
 
 
 class Alien(Sprite):
@@ -16,25 +17,25 @@ class Alien(Sprite):
     @property
     def alien_stand_surface(self):
         if Alien._alien_stand_surface is None:
-            Alien._alien_stand_surface = load_image('graphics/Player/player_stand.png')
+            Alien._alien_stand_surface = platformer_atlas().sprite('player_stand')
         return Alien._alien_stand_surface
 
     @property
     def alien_walk1_surface(self):
         if Alien._alien_walk1_surface is None:
-            Alien._alien_walk1_surface = load_image('graphics/Player/player_walk_1.png')
+            Alien._alien_walk1_surface = platformer_atlas().sprite('player_walk_1')
         return Alien._alien_walk1_surface
 
     @property
     def alien_walk2_surface(self):
         if Alien._alien_walk2_surface is None:
-            Alien._alien_walk2_surface = load_image('graphics/Player/player_walk_2.png')
+            Alien._alien_walk2_surface = platformer_atlas().sprite('player_walk_2')
         return Alien._alien_walk2_surface
 
     @property
     def alien_jump_surface(self):
         if Alien._alien_jump_surface is None:
-            Alien._alien_jump_surface = load_image('graphics/Player/player_jump.png')
+            Alien._alien_jump_surface = platformer_atlas().sprite('player_jump')
         return Alien._alien_jump_surface
 
     def __init__(self):

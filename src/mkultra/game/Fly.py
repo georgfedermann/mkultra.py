@@ -6,6 +6,7 @@ from mkultra.assets import load_sound
 
 from .GameConfig import GameConfig
 from .Monster import Monster
+from .PlatformerAtlas import platformer_atlas
 
 
 class Fly(Monster):
@@ -23,8 +24,12 @@ class Fly(Monster):
         if start_x is None:
             start_x = random.randint(GameConfig.SPAWN_X_MIN, GameConfig.SPAWN_X_MAX)
 
-        super().__init__(['graphics/Fly/Fly1.png', 'graphics/Fly/Fly2.png'],
-                         (start_x, GameConfig.FLIGHT_LEVEL))
+        atlas = platformer_atlas()
+        super().__init__(
+            [],
+            (start_x, GameConfig.FLIGHT_LEVEL),
+            images=[atlas.sprite('fly_1'), atlas.sprite('fly_2')],
+        )
 
         self.dx = random.choice([3, 4, 5, 6])
         self.active = True
