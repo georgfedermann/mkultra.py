@@ -1,176 +1,274 @@
-# MK Ultra — Architecture
+# MK Ultra Architecture
 
 ## Overview
 
-MK Ultra is a Pygame-based "jump and run" game. The player controls a character
-that moves left/right and jumps to catch flies and avoid snails. The game runs
-at 60 FPS with three screen modes: splash menu, gameplay, and game-over.
+MK Ultra is a Pygame-based jump-and-run game. The player controls an alien in a
+side-scrolling world, catches flies, avoids or precisely stomps snails, chains
+combo attacks, and manages life energy through a cockpit-style HUD.
 
 The project uses a `src/` layout:
 
 ```text
 src/mkultra/
-  __main__.py             Entry point and main Game orchestration
-  assets.py               Asset path resolution and cached pygame loaders
-  components/HealthBar.py Health bar UI sprite
-  game/                   Player, enemies, scoreboard, and configuration
-assets/                   Runtime images, audio, and font files
-tests/                    Import and configuration smoke tests
+  __main__.py              Entry point and Game orchestration
+  assets.py                Asset path resolution and cached pygame loaders
+  components/HealthBar.py  Energy HUD widget
+  game/                    Player, enemies, world, effects, scoreboard, config
+assets/                    Runtime images, audio, and font files
+docs/                      Architecture notes
+tests/                     Import and configuration smoke tests
 ```
 
-## Game Loop
+## Game Modes
 
-**File:** `src/mkultra/__main__.py` — `Game` class
+`Game.run_mkultra()` dispatches one frame at a time based on `self.mode`:
 
-The game loop runs in `Game.run_mkultra()` as a `while self.keep_running` cycle:
+| Mode | Purpose |
+|---|---|
+| `splash` | Title screen. Space or joystick button 2 starts a run. |
+| `game` | Active gameplay: input, spawning, world update, collisions, HUD, score. |
+| `death` | Zero-energy transition: the player fades, wobbles upward, and disappears. |
+| `hiscores` | Game-over screen with final score and restart prompt. |
 
-1. **splash** — Title screen. Press Space (or joystick button 2) to start.
-2. **game** — Active gameplay. Player moves, enemies spawn, collisions checked.
-3. **hiscores** — Game-over screen showing final score. Press Space to restart.
+The `Q` key quits from all modes. During gameplay, `M` toggles background music.
 
-Each iteration processes events, updates sprites, renders to screen, and calls `pygame.display.update()` at 60 FPS.
+## Runtime Ownership
 
-### Event Timers
+**File:** `src/mkultra/__main__.py`
 
-- `critter_timer` fires every 1500ms to spawn a new fly or snail (60% fly, 40% snail).
-- Music is toggled with `M` key. `Q` quits the game.
+The `Game` class is the runtime coordinator. It owns:
 
-### Runtime Ownership
+- Pygame initialization, display, clock, and event loop.
+- Mode transitions.
+- Music and generated sound effects.
+- Score state and milestone/run-up handling.
+- Sprite groups for player, enemies, defeated enemies, combo effects, floating
+  score text, and HUD.
+- Spawn selection and combo-friendly fly bursts.
+- Collision rules for flies, snails, explosions, score, health, and death.
 
-The `Game` class owns:
+The main loop deliberately keeps HUD and world concerns separate:
 
-- Pygame initialization, display setup, clock, and quit handling.
-- Mode state (`splash`, `game`, `hiscores`) and mode transitions.
-- Sprite groups for the player, flies, snails, dead critters, health bar, and score board.
-- Background surfaces, UI font, music, and achievement sound handles.
-- Collision rules that update score, health, enemy state, and game-over state.
+- **World-space sprites** use level coordinates and are drawn through `Camera`.
+- **HUD sprites** stay in screen coordinates and are drawn directly.
 
-## Components
+## World, Camera, And Platforms
 
-### Player — `Alien` (Sprite)
+### Level
+
+**File:** `src/mkultra/game/Level.py`
+
+`Level` owns the side-scrolling world:
+
+- `width`, currently configured by `GameConfig.LEVEL_WIDTH`.
+- `camera`, which follows the player horizontally.
+- Tiled sky/ground drawing.
+- `platforms`, a group of static or moving `Platform` sprites.
+- Ground/platform queries used by player movement.
+
+The current level keeps the original runner feel by adding an invisible ground
+platform across the full level width. Future level geometry can be added through:
+
+```python
+level.add_static_platform(rect)
+level.add_moving_platform(rect, velocity, movement_bounds)
+```
+
+### Camera
+
+**File:** `src/mkultra/game/Camera.py`
+
+`Camera` stores a horizontal `offset_x`, follows a target rect, and converts
+world-space rects into screen-space rects:
+
+```python
+screen_rect = camera.apply_rect(world_rect)
+```
+
+Enemy spawning is already camera-relative, so monsters appear ahead of the
+visible area as the player moves right.
+
+### Platform
+
+**File:** `src/mkultra/game/Platform.py`
+
+`Platform` is a rectangular sprite with optional velocity and movement bounds.
+It is intentionally generic so later level work can add:
+
+- static ledges
+- moving platforms
+- hazards or special surfaces through subclassing or metadata
+- boss arenas and locked sections
+
+## Player
 
 **File:** `src/mkultra/game/Alien.py`
 
-- Walk: `A` / `D` keys (or joystick axis 0). Animated between two walk frames.
-- Jump: `W` / `Space` / joystick button 1. Uses `JUMP_IMPULSE` velocity with gravity.
-- Stand: Idle animation when not moving.
-- Health: 100 life energy. `apply_damage()` subtracts damage (clamped to 0).
-- Animation images are exposed through class-level properties backed by the shared asset loader.
-- Jump sound is loaded through the shared asset loader and reused by the player instance.
+`Alien` is the player sprite.
 
-### Enemies — `Monster` base class
+- Movement: `A` / `D`, or joystick axis 0.
+- Jump: `W`, `Space`, or joystick button 1.
+- Uses level-aware horizontal clamping so the player can eventually move through
+  a longer side-scrolling level instead of being constrained to the screen.
+- Uses `Level.ground_level_for()` for ground/platform landing.
+- Health starts at 100 and `apply_damage()` clamps damage at zero.
+- At zero energy, `start_death_animation()` begins the death transition:
+  translucent fade, sideways wobble, upward float, then `hiscores`.
+
+## Enemies
+
+### Monster Base
 
 **File:** `src/mkultra/game/Monster.py`
 
-Base `pygame.sprite.Sprite` with:
-- Shared `image_cache` class dict keyed by relative asset path.
-- 2-frame animation cycle driven by `ANIMATION_SPEED`.
-- Position and rect management.
-- Image loading delegated to `mkultra.assets.load_image()`.
+`Monster` provides shared sprite behavior:
 
-#### Fly
+- cached image loading by asset path
+- two-frame animation cycle
+- active/inactive sprite state
+- rect setup from a world-space start position
+
+### Fly
 
 **File:** `src/mkultra/game/Fly.py`
 
-- Spawns at `FLIGHT_LEVEL` (y=216), off-screen right (x=900-1100).
-- Moves left at random speed (3-6 px/frame).
-- On collision with player: if close enough (delta_y < 6, delta_x < 55), fly is caught (+100 score). Otherwise, fly deals 10 damage and bounces away.
-- Catching multiple flies at once triggers achievement sound and restores full health.
-- Uses `graphics/Fly/Fly1.png` and `graphics/Fly/Fly2.png` for animation.
+Flies spawn at `GameConfig.FLIGHT_LEVEL`, move left with random speed, and can be
+stomped from above.
 
-#### Snail
+Fly combo behavior is handled in `Game.check_collisions()`:
+
+- single fly stomp: normal fly score
+- double fly combo: `DOUBLE_COMBO_SCORE` run-up
+- triple fly combo: `TRIPLE_COMBO_SCORE` run-up with stronger effects and siren
+
+When defeated, flies flip over and fall out of the sky.
+
+### Snail
 
 **File:** `src/mkultra/game/Snail.py`
 
-- Spawns at `GROUND_LEVEL` (y=300), off-screen right.
-- Moves left at 4 px/frame. Deals 20 damage on contact (750ms cooldown).
-- On hit: replaced by `SnailExplosion` animation. Explosion continues dealing damage for its duration (1000ms cooldown).
-- Once explosion completes, snail sprite is removed from game.
-- Uses `graphics/snail/snail1.png` and `graphics/snail/snail2.png` for animation.
+Snails have explicit categories:
 
-#### SnailExplosion
+- **Volatile snail:** always explodes on contact and damages the player.
+- **Stompable snail:** shows a flashing down-arrow. The player must land within
+  `SNAIL_WEAK_SPOT_MARGIN` pixels of the arrow center while falling from above.
+
+A successful stomp flips the snail and drops it like a defeated fly. Any failed
+touch detonates it into a `SnailExplosion`.
+
+### SnailExplosion
 
 **File:** `src/mkultra/game/SnailExplosion.py`
 
-- Parses a 12-frame sprite sheet (1152×96, each frame 96×96).
-- Animates frames at `ANIMATION_SPEED`. Sets `completed=True` when done.
-- Sprite sheet is loaded once via `mkultra.assets.load_image()`.
+Uses a 12-frame sprite sheet. Explosion sprites continue animating after the
+snail has detonated and can still damage the player while active.
 
-### UI Widgets
+## Spawning
 
-**HealthBar** — `src/mkultra/components/HealthBar.py`
+Spawning is handled by `Game.add_critter()` and helper methods:
 
-- Renders a green health bar inside a loaded background image.
-- Supports percentage 0-1. Uses dirty-flag pattern to avoid unnecessary redraws.
-- Includes a glossy gradient effect on the health fill.
+- `choose_spawn_type()` chooses between fly, fly combo, stompable snail, and
+  volatile snail using weights from `GameConfig`.
+- `add_fly_combo()` spawns 2-3 flies with controlled spacing so combo stomps are
+  intentionally possible.
+- `active_monster_count()` prevents overcrowding.
+- `random_spawn_x()` uses the camera offset so new enemies appear ahead of the
+  current view in level coordinates.
 
-**ScoreBoard** — `src/mkultra/game/ScoreBoard.py`
+This is ready for a future difficulty director. The next step would be to vary
+weights, spawn timing, and max active monsters by elapsed time, score, or level
+section.
 
-- Renders current score as text in top-right corner.
-- Updates every frame to reflect latest score.
+## Score And Combo Effects
 
-## Asset Loading
+### ScoreBoard
+
+**File:** `src/mkultra/game/ScoreBoard.py`
+
+The scoreboard is a compact cockpit HUD panel. It displays a zero-padded score,
+segment meter, glow flashes, and milestone highlights.
+
+Score changes flow through:
+
+- `Game.add_score(points)` for immediate score changes.
+- `Game.add_score_runup(points, with_siren=False)` for animated score increases.
+
+The run-up increments by `SCORE_RUNUP_STEP` every
+`SCORE_RUNUP_INTERVAL_MS`, playing repeated tick sounds.
+
+### ComboEffect
+
+**File:** `src/mkultra/game/ComboEffect.py`
+
+Renders flashy star effects around the player after multi-fly stomp attacks.
+Triple combos use stronger rings and more stars.
+
+### FloatingScore
+
+**File:** `src/mkultra/game/FloatingScore.py`
+
+Shows `+1000 COMBO` or `+2000 COMBO` near the player while the scoreboard runs
+up.
+
+## HUD
+
+### HealthBar
+
+**File:** `src/mkultra/components/HealthBar.py`
+
+The health bar is rendered as a spaceship-style energy panel:
+
+- smaller cockpit frame
+- color interpolation from green to orange to red
+- blinking below 10%
+- warning lamp and siren for critical energy
+
+The color fade uses RGB linear interpolation in `_lerp_color()`.
+
+## Assets
 
 **File:** `src/mkultra/assets.py`
 
-Asset loading is centralized behind four helpers:
+Asset loading is centralized:
 
 | Helper | Purpose |
 |---|---|
-| `ASSET_ROOT` | Absolute path to the top-level `assets/` directory |
-| `asset_path(*parts)` | Builds absolute paths inside `assets/` |
-| `load_image(relative_path)` | Loads and caches `pygame.Surface` objects with `convert_alpha()` |
-| `load_sound(relative_path)` | Loads and caches `pygame.mixer.Sound` objects |
-| `load_font(relative_path, size)` | Loads and caches `pygame.font.Font` objects by path and size |
+| `asset_path(*parts)` | Builds absolute paths inside `assets/`. |
+| `load_image(relative_path)` | Loads and caches converted image surfaces. |
+| `load_sound(relative_path)` | Loads and caches `pygame.mixer.Sound`. |
+| `load_font(relative_path, size)` | Loads and caches fonts by path and size. |
 
-Callers pass paths relative to `assets/`, for example
-`load_image('graphics/Player/player_stand.png')`. This keeps repository layout
-knowledge in one module and avoids repeated `Path(__file__)` calculations across
-sprites and UI components.
+Game code should pass paths relative to `assets/`, for example:
 
-Pygame image, sound, and font loading still requires the relevant Pygame systems
-to be initialized before game objects are constructed. `Game.__init__()` calls
-`pygame.init()` before loading runtime resources.
+```python
+load_image('graphics/Player/player_stand.png')
+```
 
 ## Configuration
 
 **File:** `src/mkultra/game/GameConfig.py`
 
-Class with class-level constants:
-| Constant | Value | Description |
-|---|---|---|
-| FPS | 60 | Target framerate |
-| SCREEN_DIMENSION | (800, 400) | Window size |
-| GROUND_LEVEL | 300 | Y position of ground |
-| FLIGHT_LEVEL | 216 | Y position for flies |
-| JUMP_IMPULSE | -20 | Initial jump velocity |
-| MOVE_SCALE | 4 | Horizontal movement multiplier |
-| FLY_SCORE | 100 | Points per fly caught |
-| FLY_DAMAGE | 10 | Damage per fly miss |
-| SNAIL_SCORE | 200 | Points per snail hit |
-| SNAIL_DAMAGE | 20 | Damage per snail contact |
-| ANIMATION_SPEED | 0.1 | Animation frame advance rate |
+`GameConfig` contains class-level tuning constants. Important groups:
 
-## Asset Structure
+- screen and FPS
+- player movement, death animation, and level width
+- camera target ratio
+- fly score, damage, combo spawn spacing, and combo rewards
+- snail damage, spawn weights, and weak-spot margin
+- score run-up timing
+- active monster cap and spawn distance
 
-```
-assets/
-  graphics/
-    Sky.png                  — Background sky
-    ground.png               — Ground tile
-    Player/                  — Player sprites (stand, walk_1, walk_2, jump)
-    Fly/                     — Fly sprites (Fly1, Fly2)
-    snail/                   — Snail sprites (snail1, snail2)
-    snail_explosion.png      — 12-frame explosion sprite sheet
-    healthbar/background.png — Health bar background
-  audio/
-    music.wav                — Background game music
-    intro.mp3                — Splash screen music
-    hiscore.mp3              — Game over music
-    achievement.mp3          — Multi-fly catch sound
-    cjump.mp3                — Jump sound
-    punch.mp3                — Fly hit sound
-    explosion.wav            — Snail explosion sound
-  font/
-    Pixeltype.ttf            — Pixel font used for UI text
-```
+## Extension Points
+
+The current architecture is prepared for:
+
+- longer right-scrolling levels
+- static and moving platform layouts
+- power-ups and pickups as new world-space sprites
+- environmental hazards
+- mission objectives and combo meters
+- end-of-level boss arenas
+
+Recommended next structural step: move spawn/difficulty rules out of `Game` into
+a dedicated director class once difficulty phases, power-ups, and boss triggers
+become concrete.

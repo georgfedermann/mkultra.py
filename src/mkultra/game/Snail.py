@@ -91,13 +91,15 @@ class Snail(Monster):
             self.rect.y += self.dy
             self.dy += 1
 
-    def draw_marker(self, screen):
+    def draw_marker(self, screen, camera=None):
         if not self.can_be_stomped or not self.active or self.explosion:
             return
 
         pulse = abs(30 - self.arrow_tick) / 30
         arrow_y = self.rect.top - 28 + int(8 * pulse)
         arrow_x = self.weak_spot_centerx()
+        if camera:
+            arrow_x -= camera.offset_x
         glow_color = (255, 250, 100) if self.arrow_tick % 12 < 6 else (255, 68, 24)
         core_color = (255, 255, 255)
 

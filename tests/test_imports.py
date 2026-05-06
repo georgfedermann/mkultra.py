@@ -6,7 +6,9 @@ from mkultra.game.ComboEffect import ComboEffect
 from mkultra.game.FloatingScore import FloatingScore
 from mkultra.game.Fly import Fly
 from mkultra.game.GameConfig import GameConfig
+from mkultra.game.Level import Level
 from mkultra.game.Monster import Monster
+from mkultra.game.Platform import Platform
 from mkultra.game.ScoreBoard import ScoreBoard
 from mkultra.game.Snail import Snail
 from mkultra.game.SnailExplosion import SnailExplosion
@@ -18,7 +20,9 @@ def test_modules_import():
     assert Fly
     assert FloatingScore
     assert HealthBar
+    assert Level
     assert Monster
+    assert Platform
     assert ScoreBoard
     assert Snail
     assert SnailExplosion

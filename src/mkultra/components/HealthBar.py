@@ -15,7 +15,8 @@ class HealthBar(Sprite):
 
     INNER_ORIGIN = (52, 11)
 
-    CRITICAL_THRESHOLD = 0.1
+    # will start blinking and sound an alarm when the percentage drops below this threshold
+    CRITICAL_THRESHOLD = 0.18
     BLINK_INTERVAL_MS = 180
 
     BLACK = (5, 7, 10)

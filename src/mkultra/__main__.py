@@ -13,6 +13,7 @@ from mkultra.game.ComboEffect import ComboEffect
 from mkultra.game.FloatingScore import FloatingScore
 from mkultra.game.Fly import Fly
 from mkultra.game.GameConfig import GameConfig
+from mkultra.game.Level import Level
 from mkultra.game.ScoreBoard import ScoreBoard
 from mkultra.game.Snail import Snail
 
@@ -23,8 +24,7 @@ class Game():
         self.screen = pygame.display.set_mode(GameConfig.SCREEN_DIMENSION)
         pygame.display.set_caption('MK Ultra')
 
-        self.sky_surface = load_image('graphics/Sky.png')
-        self.ground_surface = load_image('graphics/ground.png')
+        self.level = Level()
         self.font = load_font('font/Pixeltype.ttf', 50)
 
         self.score = 0
@@ -39,9 +39,10 @@ class Game():
         self.snail_group = Group()
         self.combo_effect_group = Group()
         self.floating_score_group = Group()
-        self.dead_critter_group = Group()
-        self.dead_critter_group.add(self.health_bar)
-        self.dead_critter_group.add(self.score_board)
+        self.defeated_critter_group = Group()
+        self.hud_group = Group()
+        self.hud_group.add(self.health_bar)
+        self.hud_group.add(self.score_board)
 
         self.clock = pygame.time.Clock()
         self.critter_timer = pygame.USEREVENT + 1
@@ -74,10 +75,12 @@ class Game():
 
     def reset_game(self):
         self.alien.add(Alien())
+        self.level = Level()
         self.fly_group.empty()
         self.snail_group.empty()
         self.combo_effect_group.empty()
         self.floating_score_group.empty()
+        self.defeated_critter_group.empty()
         self.set_player_health_bar()
         self.score = 0
         self.score_board.set_score(self.score)
@@ -203,11 +206,11 @@ class Game():
         if spawn_type == 'fly_combo':
             self.add_fly_combo()
         elif spawn_type == 'stompable_snail':
-            self.snail_group.add(Snail(can_be_stomped=True))
+            self.snail_group.add(Snail(can_be_stomped=True, start_x=self.random_spawn_x()))
         elif spawn_type == 'volatile_snail':
-            self.snail_group.add(Snail(can_be_stomped=False))
+            self.snail_group.add(Snail(can_be_stomped=False, start_x=self.random_spawn_x()))
         else:
-            self.fly_group.add(Fly())
+            self.fly_group.add(Fly(start_x=self.random_spawn_x()))
 
     def active_monster_count(self):
         return len(self.fly_group) + len(self.snail_group)
@@ -232,11 +235,16 @@ class Game():
     def add_fly_combo(self):
         available_slots = GameConfig.MAX_ACTIVE_MONSTERS - self.active_monster_count()
         combo_size = min(random.randint(GameConfig.FLY_COMBO_MIN_SIZE, GameConfig.FLY_COMBO_MAX_SIZE), available_slots)
-        start_x = random.randint(GameConfig.SPAWN_X_MIN, GameConfig.SPAWN_X_MAX)
+        start_x = self.random_spawn_x()
         spacing = random.randint(GameConfig.FLY_COMBO_MIN_SPACING, GameConfig.FLY_COMBO_MAX_SPACING)
 
         for index in range(combo_size):
             self.fly_group.add(Fly(start_x=start_x + index * spacing))
+
+    def random_spawn_x(self):
+        spawn_min = self.level.camera.offset_x + GameConfig.SPAWN_X_MIN
+        spawn_max = self.level.camera.offset_x + GameConfig.SPAWN_X_MAX
+        return min(random.randint(spawn_min, spawn_max), self.level.width - 40)
 
     def is_stomp_from_above(self, player, critter):
         delta_x = abs(player.rect.centerx - critter.rect.centerx)
@@ -253,7 +261,7 @@ class Game():
 
             for fly in collision_flies:
                 if self.is_stomp_from_above(player, fly):
-                    self.dead_critter_group.add(fly)
+                    self.defeated_critter_group.add(fly)
                     fly.hit()
                     hit_count += 1
                 else:
@@ -283,7 +291,7 @@ class Game():
             for snail in snails:
                 if not snail.explosion and snail.is_hit_in_weak_spot(player):
                     self.snail_group.remove(snail)
-                    self.dead_critter_group.add(snail)
+                    self.defeated_critter_group.add(snail)
                     self.add_score(GameConfig.SNAIL_SCORE)
                     snail.stomp()
                     continue
@@ -342,34 +350,17 @@ class Game():
             else:
                 self.alien.sprite.process_event(event)
 
-        self.screen.blit(self.sky_surface, (0, 0))
-        self.screen.blit(self.ground_surface, (0, 300))
         self.update_score_runup()
 
-        self.alien.update()
-        self.alien.draw(self.screen)
-
+        self.alien.update(self.level)
+        self.level.update(self.alien.sprite.rect)
         self.fly_group.update()
-        self.fly_group.draw(self.screen)
         self.snail_group.update()
-
-        # Draw snails and their explosions
-        for snail in self.snail_group.sprites():
-            if snail.should_draw_snail():
-                # Draw the snail itself
-                self.screen.blit(snail.image, snail.rect)
-                snail.draw_marker(self.screen)
-            elif snail.explosion:
-                # Draw the explosion instead of the snail
-                snail.explosion.update()
-                self.screen.blit(snail.explosion.image, snail.explosion.rect)
-
         self.combo_effect_group.update()
-        self.combo_effect_group.draw(self.screen)
         self.floating_score_group.update()
-        self.floating_score_group.draw(self.screen)
-        self.dead_critter_group.update()
-        self.dead_critter_group.draw(self.screen)
+        self.defeated_critter_group.update()
+        self.hud_group.update()
+        self.draw_world()
 
         self.check_collisions()
 
@@ -378,34 +369,50 @@ class Game():
             if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_q):
                 self.keep_running = False
 
-        self.screen.blit(self.sky_surface, (0, 0))
-        self.screen.blit(self.ground_surface, (0, 300))
         self.update_score_runup()
 
         self.alien.update()
-        self.alien.draw(self.screen)
-
+        self.level.update(self.alien.sprite.rect)
         self.fly_group.update()
-        self.fly_group.draw(self.screen)
         self.snail_group.update()
-
-        for snail in self.snail_group.sprites():
-            if snail.should_draw_snail():
-                self.screen.blit(snail.image, snail.rect)
-                snail.draw_marker(self.screen)
-            elif snail.explosion:
-                snail.explosion.update()
-                self.screen.blit(snail.explosion.image, snail.explosion.rect)
-
         self.combo_effect_group.update()
-        self.combo_effect_group.draw(self.screen)
         self.floating_score_group.update()
-        self.floating_score_group.draw(self.screen)
-        self.dead_critter_group.update()
-        self.dead_critter_group.draw(self.screen)
+        self.defeated_critter_group.update()
+        self.hud_group.update()
+        self.draw_world()
 
         if self.alien.sprite.is_death_animation_complete():
             self.mode = 'hiscores'
+
+    def draw_world(self):
+        self.level.draw_background(self.screen)
+        self.level.draw_platforms(self.screen)
+        self.draw_sprite_group(self.fly_group)
+        self.draw_snails()
+        self.draw_sprite_group(self.defeated_critter_group)
+        self.draw_sprite_group(self.combo_effect_group)
+        self.draw_sprite_group(self.floating_score_group)
+        self.screen.blit(self.alien.sprite.image, self.level.camera.apply_rect(self.alien.sprite.rect))
+        self.hud_group.draw(self.screen)
+
+    def draw_sprite_group(self, group):
+        visible_area = self.level.camera.visible_area()
+        for sprite in group.sprites():
+            if sprite.rect.colliderect(visible_area):
+                self.screen.blit(sprite.image, self.level.camera.apply_rect(sprite.rect))
+
+    def draw_snails(self):
+        visible_area = self.level.camera.visible_area()
+        for snail in self.snail_group.sprites():
+            if not snail.rect.colliderect(visible_area):
+                continue
+
+            if snail.should_draw_snail():
+                self.screen.blit(snail.image, self.level.camera.apply_rect(snail.rect))
+                snail.draw_marker(self.screen, self.level.camera)
+            elif snail.explosion:
+                snail.explosion.update()
+                self.screen.blit(snail.explosion.image, self.level.camera.apply_rect(snail.explosion.rect))
 
     def show_splash(self):
         self.game_music.stop()

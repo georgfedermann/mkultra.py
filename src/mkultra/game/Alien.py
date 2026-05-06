@@ -65,7 +65,7 @@ class Alien(Sprite):
         assert damage >= 0, f"damage must be >= 0 but was {damage}"
         self.life_energy -= min(self.life_energy, damage)
 
-    def update(self):
+    def update(self, level=None):
         if self.dying:
             self.update_death_animation()
             return
@@ -80,15 +80,23 @@ class Alien(Sprite):
         self.base_image = self.image
 
         # handle character movement
+        delta_x = self.dx * GameConfig.MOVE_SCALE
         if self.dx > 0:
-            self.rect.x += min(self.dx * GameConfig.MOVE_SCALE, GameConfig.SCREEN_WIDTH - self.rect.right)
+            if level:
+                self.rect.x += level.clamp_horizontal_movement(self.rect, delta_x)
+            else:
+                self.rect.x += min(delta_x, GameConfig.SCREEN_WIDTH - self.rect.right)
         elif self.dx < 0:
-            self.rect.x += max(self.dx * GameConfig.MOVE_SCALE, -self.rect.left)
+            if level:
+                self.rect.x += level.clamp_horizontal_movement(self.rect, delta_x)
+            else:
+                self.rect.x += max(delta_x, -self.rect.left)
 
-        if self.rect.bottom < GameConfig.GROUND_LEVEL or self.dy < 0:
-            self.rect.bottom = min(self.rect.bottom + self.dy, GameConfig.GROUND_LEVEL)
+        ground_level = level.ground_level_for(self.rect) if level else GameConfig.GROUND_LEVEL
+        if self.rect.bottom < ground_level or self.dy < 0:
+            self.rect.bottom = min(self.rect.bottom + self.dy, ground_level)
             self.dy += 1
-            if self.rect.bottom == GameConfig.GROUND_LEVEL:
+            if self.rect.bottom == ground_level:
                 self.image = self.alien_stand_surface
                 self.dy = 0
 

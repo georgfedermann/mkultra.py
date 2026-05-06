@@ -2,6 +2,8 @@ class GameConfig():
     # Game
     FPS = 60
     FLIGHT_LEVEL = 216
+    LEVEL_WIDTH = 3200
+    CAMERA_TARGET_X_RATIO = 0.42
 
     # Player
     GROUND_LEVEL = 300
